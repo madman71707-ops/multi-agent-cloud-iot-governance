@@ -1,0 +1,90 @@
+# Closed-loop v3 action effects ("isolation_cost="v3""), for the finite-cost
+# isolation model introduced in Phase 2b to fix the free-isolation problem.
+#
+# Legacy closed_loop.yaml is NEVER modified; this file is a new config for a
+# NEW environment (data/experiments_v3/) only. The v2 environment and its
+# data/experiments_v2/ outputs are untouched and remain reproducible.
+#
+# What v3 changes and why:
+#
+# * Isolation is no longer free. A quarantined device still draws power
+#   (energy_saving: 0.0) and its removed workload is lost service for the
+#   duration of the quarantine, so the resource/sustainability agent no longer
+#   favours isolate by default. This restores a real trade-off between
+#   security and service/utility objectives.
+#
+# * Quarantine is temporary: a device is re-admitted after isolation_duration
+#   ticks (default 10), at which point it is no longer isolated. The
+#   compromised flag is cleared ONLY when isolation itself clears it (not
+#   touched here; isolation clears compromise in the twin when it quarantines).
+#
+# * Concurrency cap: at most max_isolated_fraction of the fleet may be
+#   isolated at once (default 0.15). When the cap is reached, isolate
+#   candidates are not generated at all (so no strategy can circumvent the cap
+#   by picking a different isolate action).
+#
+# * migrate and scale_down also carry a small service loss (default a fraction
+#   of the target's workload share) so they are not cost-free either.
+#
+# All values are configurable; the defaults below were chosen in the
+# calibration sandbox (tuning seeds 1000-1009) using TAPNA-agnostic criteria
+# (see docs/phase2b_summary.md) and are frozen for the official run.
+
+propagation:
+  # Unchanged from the v2 model: compromised non-isolated devices still damage
+  # neighbours each tick. isolation_duration does NOT suppress propagation for
+  # already-compromised devices that are NOT yet isolated; it only governs
+  # re-admission after quarantine.
+  rate: 0.10
+  impact: 0.05
+  neighbours: 2
+
+actions:
+  isolate:
+    # A quarantined device is OFFLINE for service for isolation_duration ticks,
+    # but still draws standby power. No energy saving.
+    energy_saving: 0.0
+    # Service loss: the isolated device's share of fleet workload is offline for
+    # the quarantine duration. This is tracked by the twin as
+    # device._v3_service_loss_fraction (set at quarantine time) and reported by
+    # the v3 outcome metrics. The YAML here records the structural fact that
+    # isolate removes the target's workload share from service for the duration;
+    # the actual per-run fraction is device-specific and read from the twin.
+    # Re-admission after isolation_duration ticks:
+    isolation_duration: 10
+    # Re-admitted device keeps any clear-compromise from isolation; its network
+    # load returns to whatever the dynamics put it at (not forced to 0 on
+    # re-admission). On isolation, network is pinned to 0 (classic quarantine),
+    # and the device's workload share is marked offline for service.
+    capacity_penalty: 0.05   # quarantine overhead on cpu_load
+    cost_penalty: 0.02       # isolation service cost
+    # No energy saving (device still draws standby power while isolated).
+
+  migrate:
+    load_shift: 0.50         # network_load *= (1 - load_shift)
+    threat_leak: 0.50        # retained fraction of threat influence
+    energy_cost: 0.02        # migration energy
+    cost_penalty: 0.03       # migration service cost
+    # Service loss: a small fraction of the target's workload share is offline
+    # while the load is being moved (default 0.2 of the target's workload share).
+    # Tracked by the twin as device._v3_migrate_service_loss_fraction (set at
+    # migrate time, decays/re-admitted alongside the migration movement).
+    migrate_service_loss_fraction: 0.2
+
+  scale_down:
+    energy_reduction: 0.15   # energy_kwh *= (1 - energy_reduction)
+    capacity_reduction: 0.10 # cpu_load *= (1 - capacity_reduction)
+    # capacity_reduction now also counts as service loss: the removed capacity
+    # fraction of the device's workload share is offline while scaled down.
+    # Tracked by the twin as device._v3_scale_down_service_loss_fraction.
+
+  no_op: {}                  # changes nothing, no service loss
+
+# Concurrency cap on simultaneous isolates.
+isolation_cap:
+  max_isolated_fraction: 0.15   # at most this fraction of the fleet may be
+                                 # isolated at once; when reached, NO isolate
+                                 # candidate is generated at all (hard cap).
+  # Enforcement is on the twin (DigitalTwinV3.apply_action / candidate
+  # generation gate), not on the scoring side, so the cap is a real
+  # capacity constraint, not a scoring convenience.

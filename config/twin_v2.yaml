@@ -1,0 +1,104 @@
+# Digital Twin v2 dynamics ("dynamics=\"v2\"") and v2 attack schedules.
+#
+# Legacy behaviour (sim/experiment_runner.py + digital_twin/twin.py) is
+# untouched and remains the default everywhere. This file parameterizes ONLY
+# the new v2 mode introduced in digital_twin/twin_v2.py and
+# sim/attack_patterns_v2.py.
+#
+# Design goals (from docs/audit_phase0.md):
+#   * mean reversion, so the twin recovers after an attack ends;
+#   * per-device heterogeneity, so default attack intensities cannot drive
+#     every device to trust 0 / network 1;
+#   * seed-dependent devices, targeting, onset and intensity, so seeds carry
+#     real information (std across per-seed means > 0).
+
+# ---------------------------------------------------------------------------
+# Per-tick dynamics (all devices, every tick)
+# ---------------------------------------------------------------------------
+walk_sigma: 0.02            # std of the random walk on cpu/mem/network/trust
+trust_recovery_rate: 0.10   # trust relaxes toward its baseline: trust += r*(baseline - trust)
+load_recovery_rate: 0.10    # network load relaxes toward its baseline, same form
+
+# Seed-dependent per-device parameters (drawn from the experiment's RNG).
+baseline_trust_range: [0.75, 0.95]
+baseline_network_range: [0.15, 0.45]
+susceptibility_range: [0.5, 1.5]   # scales how strongly attacks hit a device
+initial_noise_sigma: 0.03          # initial trust/network = baseline + N(0, this)
+
+# ---------------------------------------------------------------------------
+# Attack application (v2 schedules; intensity from the scenario schedule)
+# ---------------------------------------------------------------------------
+attack:
+  # Per attack tick, each targeted non-isolated device moves by
+  #   intensity * susceptibility * rate
+  # Equilibrium trust deficit at intensity I is I * susceptibility * rate /
+  # recovery_rate = 1.2 * I * susceptibility (rate 0.12, recovery 0.10).
+  # CALIBRATION (performed on tuning seeds 1000-1009 ONLY): the frozen
+  # detector in agents/security_agent.py flags "attack" only when fleet-avg
+  # trust < 0.7 (or fleet-avg network > 0.7). With baseline trust ~0.85 and
+  # targeted fraction f in [0.3, 0.6], an attack registers only once
+  # f * deficit exceeds ~0.15. At rate 0.07 the sustained scenario
+  # (I=0.35) never crossed that threshold for f < 0.6, so sustained attacks
+  # went undetected and TSS stayed below tau for entire runs. rate 0.12 with
+  # the intensities below makes every scenario register at every targeted
+  # fraction while keeping the average targeted device at trust ~0.0-0.3
+  # and the fleet average at ~0.45-0.67 - well below fleet-wide saturation.
+  trust_rate: 0.12
+  load_rate: 0.12
+  # Fraction of devices targeted by the campaign, drawn per (seed, scenario).
+  targeted_fraction_range: [0.3, 0.6]
+  # Attack onset jitter: onset = base_onset + U(-jitter, +jitter) ticks.
+  onset_base: 10
+  onset_jitter: 10
+  # Intensity jitter: intensities scaled by U(1-j, 1+j) per run.
+  intensity_jitter: 0.2
+
+# Scenario shapes (intensity per tick; all additionally jitted per seed).
+schedules:
+  # Intensities calibrated on tuning seeds 1000-1009 ONLY so that every
+  # scenario registers in the frozen detector for every targeted fraction
+  # f in [0.3, 0.6] (see the attack block comment): the attack bites once
+  # f * 1.2 * I * (1 - exp(-0.1 * t_into_attack)) exceeds ~0.15.
+  gradual:        # linear ramp to a plateau that persists to the horizon
+    ramp_ticks: 30
+    plateau_intensity: 0.5
+  short_spike:    # one 8-tick pulse; the TSS decay afterwards is recovery
+    pulse_ticks: 8
+    pulse_intensity: 0.85
+  repeated:       # 3 pulses separated by gaps long enough for TSS < tau
+    pulses: 3
+    pulse_ticks: 10
+    pulse_intensity: 0.75
+    gap_ticks: 25
+  sustained:      # constant moderate intensity (no instant saturation)
+    intensity: 0.45
+
+# ---------------------------------------------------------------------------
+# Security utility v2 ("us_mode=\"v2\"") - see sim/scoring_v2.py
+# ---------------------------------------------------------------------------
+us_v2:
+  # risk(device, tss) = trust_weight*(1-trust)^2 + network_weight*net^2
+  #                     + tss_weight*tss        (convex: improving a worse
+  #                      device removes more risk than improving a healthy one)
+  # U_S(a) = clip01(0.5 + 0.5 * (risk_before - risk_after(a)) / risk_scale)
+  #   * no_op has U_S = 0.5 exactly (zero predicted effect);
+  #   * fixed risk_scale (instead of dividing by risk_before) keeps the
+  #     ordering "isolate compromised > isolate healthy" robust for healthy
+  #     devices whose own risk is near zero;
+  #   * risk is evaluated on the action's TARGET device (from the twin state)
+  #     plus the fleet TSS as context;
+  #   * the TSS term is identical before and after the action (actions do
+  #     not change the fleet TSS), so it cancels in the difference and does
+  #     NOT move U_S; the threat LEVEL enters decisions through TAPNA's
+  #     adaptive w_S and ThreatRuleOnly's rule, not through U_S (documented
+  #     in sim/scoring_v2.py).
+  trust_weight: 0.4
+  network_weight: 0.3
+  tss_weight: 0.3
+  risk_scale: 0.5
+
+# Containment threshold for the outcome metrics (canonical tau).
+containment_tau: 0.15
+# trust_recovery_time tolerance: recovery counts once fleet avg trust is
+# within this distance of its pre-attack level.
+recovery_tolerance: 0.02

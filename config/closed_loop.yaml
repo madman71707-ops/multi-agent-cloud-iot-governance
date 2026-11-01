@@ -1,0 +1,43 @@
+# Closed-loop action effects ("closed_loop=True"), consumed by
+# DigitalTwinV2.apply_action and DigitalTwinV2.advance in
+# digital_twin/twin_v2.py. Legacy/open-loop runs never read this file.
+#
+# Effects are applied AFTER the negotiation of tick t, so they change the
+# state that tick t+1 sees. All effects are deterministic given the action;
+# the only stochastic element is which neighbours propagation hits (drawn
+# from the experiment's seeded numpy stream).
+#
+# Chosen actions target ONE device (the action's target_device_id).
+
+propagation:
+  # Each tick, every compromised non-isolated device lowers `neighbours`
+  # other (non-isolated) devices' trust and raises their network load:
+  #   impact = propagation_rate * propagation_impact * leak_of_source
+  # With the defaults: impact = 0.10 * 0.05 = 0.005 per (source, neighbour)
+  # pair per tick.
+  rate: 0.10
+  impact: 0.05
+  neighbours: 2
+
+actions:
+  isolate:
+    # Quarantine the target: it leaves the network (network load pinned to 0),
+    # its threat propagation and its attack exposure stop, its compromised
+    # flag clears. Re-isolating an isolated device has no further effect.
+    capacity_penalty: 0.05   # cpu_load += (quarantine overhead)
+    energy_saving: 0.10      # energy_kwh *= (1 - energy_saving)
+    cost_penalty: 0.02       # cost_per_hour += (isolation service cost)
+  migrate:
+    # Offload the target: a `load_shift` fraction of its network load moves
+    # (spread evenly over the other non-isolated devices); the device keeps
+    # only a `threat_leak` fraction of its threat influence (its future
+    # attack exposure and its propagation impact are scaled by it).
+    load_shift: 0.50         # network_load *= (1 - load_shift)
+    threat_leak: 0.50        # retained fraction of threat influence
+    energy_cost: 0.02        # energy_kwh += (migration energy)
+    cost_penalty: 0.03       # cost_per_hour += (migration service cost)
+  scale_down:
+    # Shrink the target: lower energy and capacity; NO effect on threat.
+    energy_reduction: 0.15   # energy_kwh *= (1 - energy_reduction)
+    capacity_reduction: 0.10 # cpu_load   *= (1 - capacity_reduction)
+  no_op: {}                  # changes nothing

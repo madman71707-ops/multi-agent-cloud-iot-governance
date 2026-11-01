@@ -21,8 +21,68 @@ class SustainabilityPredictor:
         self.electricity_price_per_kwh = electricity_price_per_kwh
         self.energy_model: RandomForestRegressor | None = None
         self.feature_scaler = StandardScaler()
+        self.feature_ranges: dict[str, tuple[float, float]] = {}
         self.energy_validation_mae: float | None = None
         self.cost_validation_mae: float | None = None
+
+    def _get_feature_ranges(self, data: pd.DataFrame | None = None) -> dict[str, tuple[float, float]]:
+        if data is not None:
+            ranges: dict[str, tuple[float, float]] = {}
+            for feature in self.REQUIRED_FEATURES:
+                values = pd.to_numeric(data[feature], errors="coerce").dropna()
+                if values.empty:
+                    ranges[feature] = (0.0, 1.0)
+                    continue
+                lo = float(values.min())
+                hi = float(values.max())
+                if hi <= lo:
+                    hi = lo + 1.0
+                ranges[feature] = (lo, hi)
+            self.feature_ranges = ranges
+            return ranges
+
+        if self.feature_ranges:
+            return self.feature_ranges
+
+        project_root = Path(__file__).resolve().parents[2]
+        source_path = project_root / "data" / "real_sustainability" / "job_table.parquet"
+        if not source_path.exists():
+            self.feature_ranges = {feature: (0.0, 1.0) for feature in self.REQUIRED_FEATURES}
+            return self.feature_ranges
+
+        try:
+            raw_data = pd.read_parquet(source_path)
+        except Exception:
+            self.feature_ranges = {feature: (0.0, 1.0) for feature in self.REQUIRED_FEATURES}
+            return self.feature_ranges
+
+        column_map = {
+            "cpu_load": "num_cores_alloc",
+            "memory_load": "mem_alloc",
+            "network_load": "run_time",
+        }
+        remapped = pd.DataFrame()
+        for feature in self.REQUIRED_FEATURES:
+            source_col = column_map.get(feature, feature)
+            if source_col in raw_data.columns:
+                remapped[feature] = pd.to_numeric(raw_data[source_col], errors="coerce")
+            else:
+                remapped[feature] = pd.to_numeric(raw_data[feature], errors="coerce")
+        return self._get_feature_ranges(remapped)
+
+    def _transform_inference_features(self, data: pd.DataFrame) -> pd.DataFrame:
+        transformed = data[self.REQUIRED_FEATURES].copy()
+        feature_ranges = self._get_feature_ranges()
+
+        for feature in self.REQUIRED_FEATURES:
+            values = pd.to_numeric(transformed[feature], errors="coerce")
+            lo, hi = feature_ranges.get(feature, (0.0, 1.0))
+            if hi <= lo:
+                continue
+            if values.notna().all() and values.min() >= 0.0 and values.max() <= 1.0:
+                transformed[feature] = lo + values * (hi - lo)
+
+        return transformed
 
     def train(self, data: pd.DataFrame) -> None:
         self._validate_features(data)
@@ -44,6 +104,7 @@ class SustainabilityPredictor:
             n_estimators=100,
             random_state=self.random_state,
         )
+        self._get_feature_ranges(features)
         x_train_scaled = self.feature_scaler.fit_transform(x_train)
         x_val_scaled = self.feature_scaler.transform(x_val)
 
@@ -59,7 +120,7 @@ class SustainabilityPredictor:
         if self.energy_model is None:
             raise ValueError("Models are not trained or loaded.")
 
-        features = data[self.REQUIRED_FEATURES]
+        features = self._transform_inference_features(data)
         features_scaled = self.feature_scaler.transform(features)
         energy_predictions = np.asarray(self.energy_model.predict(features_scaled))
         return {
@@ -77,6 +138,7 @@ class SustainabilityPredictor:
             {
                 "energy_model": self.energy_model,
                 "feature_scaler": self.feature_scaler,
+                "feature_ranges": self.feature_ranges,
                 "electricity_price_per_kwh": self.electricity_price_per_kwh,
                 "energy_validation_mae": self.energy_validation_mae,
                 "cost_validation_mae": self.cost_validation_mae,
@@ -88,11 +150,14 @@ class SustainabilityPredictor:
         payload = joblib.load(path)
         self.energy_model = payload["energy_model"]
         self.feature_scaler = payload.get("feature_scaler", StandardScaler())
+        self.feature_ranges = payload.get("feature_ranges", {})
         self.electricity_price_per_kwh = payload.get(
             "electricity_price_per_kwh", self.electricity_price_per_kwh
         )
         self.energy_validation_mae = payload.get("energy_validation_mae")
         self.cost_validation_mae = payload.get("cost_validation_mae")
+        if not self.feature_ranges:
+            self._get_feature_ranges()
 
     def _validate_features(self, data: pd.DataFrame) -> None:
         missing_features = [

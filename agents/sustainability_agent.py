@@ -62,25 +62,17 @@ def _prediction_totals(telemetry: pd.DataFrame) -> tuple[float, float]:
 
 
 def score_sustainability(action, twin_state) -> float:
+    telemetry_current = _telemetry_frame(twin_state)
     telemetry_after = _telemetry_frame(twin_state, action)
+
+    baseline_energy, baseline_cost = _prediction_totals(telemetry_current)
     predicted_energy_after, predicted_cost_after = _prediction_totals(telemetry_after)
 
-    current_cost = twin_state["total_cost_per_hour"]
-    current_energy = twin_state["total_energy_kwh"]
-    predicted_cost_after_normalized = (
-        predicted_cost_after / current_cost
-        if current_cost
-        else predicted_cost_after
-    )
-    predicted_energy_after_normalized = (
-        predicted_energy_after / current_energy
-        if current_energy
-        else predicted_energy_after
-    )
+    baseline_energy = max(float(baseline_energy), 1e-9)
+    baseline_cost = max(float(baseline_cost), 1e-9)
 
-    utility = 1 - (
-        predicted_cost_after_normalized +
-        predicted_energy_after_normalized
-    ) / 2
+    energy_reduction = max(0.0, 1.0 - (predicted_energy_after / baseline_energy))
+    cost_reduction = max(0.0, 1.0 - (predicted_cost_after / baseline_cost))
+    raw_utility = 0.5 * (energy_reduction + cost_reduction)
 
-    return _clip01(utility)
+    return _clip01(float(raw_utility))

@@ -28,16 +28,30 @@ class ThreatDetector:
             contamination=0.05,
             random_state=random_state,
         )
+        self._train_score_min: float | None = None
+        self._train_score_max: float | None = None
 
     def train(self, data: pd.DataFrame) -> None:
         self._validate_features(data)
         self.model.fit(data[self.FEATURES])
 
+        raw_scores = -self.model.decision_function(data[self.FEATURES])
+        self._train_score_min = float(raw_scores.min())
+        self._train_score_max = float(raw_scores.max())
+
     def predict_anomaly(self, data: pd.DataFrame) -> np.ndarray:
         self._validate_features(data)
         raw_scores = -self.model.decision_function(data[self.FEATURES])
-        min_score = float(raw_scores.min())
-        max_score = float(raw_scores.max())
+
+        # Use training-time bounds so single-row inference works correctly.
+        # Per-batch min/max would collapse to 0 for a single row.
+        if self._train_score_min is not None and self._train_score_max is not None:
+            min_score = self._train_score_min
+            max_score = self._train_score_max
+        else:
+            # Fallback for legacy models loaded without stored bounds
+            min_score = float(raw_scores.min())
+            max_score = float(raw_scores.max())
 
         if max_score == min_score:
             return np.zeros(len(raw_scores), dtype=float)
@@ -57,10 +71,26 @@ class ThreatDetector:
     def save(self, path: str) -> None:
         output_path = Path(path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        joblib.dump(self.model, output_path)
+        joblib.dump(
+            {
+                "model": self.model,
+                "train_score_min": self._train_score_min,
+                "train_score_max": self._train_score_max,
+            },
+            output_path,
+        )
 
     def load(self, path: str) -> None:
-        self.model = joblib.load(path)
+        data = joblib.load(path)
+        if isinstance(data, dict):
+            self.model = data["model"]
+            self._train_score_min = data.get("train_score_min")
+            self._train_score_max = data.get("train_score_max")
+        else:
+            # Legacy format: bare model object without stored bounds
+            self.model = data
+            self._train_score_min = None
+            self._train_score_max = None
 
     def _validate_features(self, data: pd.DataFrame) -> None:
         missing = [feature for feature in self.FEATURES if feature not in data.columns]

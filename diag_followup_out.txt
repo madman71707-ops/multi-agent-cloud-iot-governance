@@ -1,0 +1,54 @@
+building gradual trace ...
+building sustained trace ...
+
+=== (b) flat-U_S / agreement probe ===
+  Gradual tick   0: TSS=0.2168 maxU_S=0.610831 minU_S=0.448980 flat=False TAPNA=isolate Static=isolate agree=True
+  Gradual tick   1: TSS=0.6654 maxU_S=0.206904 minU_S=0.140440 flat=False TAPNA=isolate Static=isolate agree=True
+  Gradual tick   2: TSS=0.6997 maxU_S=0.132586 minU_S=0.100743 flat=False TAPNA=isolate Static=migrate agree=False
+  Gradual tick   3: TSS=0.7267 maxU_S=0.079246 minU_S=0.047361 flat=False TAPNA=isolate Static=isolate agree=True
+  Gradual tick   4: TSS=0.7698 maxU_S=0.032631 minU_S=0.004879 flat=False TAPNA=isolate Static=isolate agree=True
+  Gradual tick   5: TSS=0.8029 maxU_S=0.013877 minU_S=0.000000 flat=False TAPNA=isolate Static=isolate agree=True
+  Gradual tick   6: TSS=0.8370 maxU_S=0.000000 minU_S=0.000000 flat=True TAPNA=scale_down Static=scale_down agree=True
+  Gradual tick   7: TSS=0.8616 maxU_S=0.000000 minU_S=0.000000 flat=True TAPNA=migrate Static=migrate agree=True
+Gradual: flat-U_S ticks (max U_S == 0): 94/100; TAPNA==StaticWeighted choice on TSS>=0.5 ticks: 98/99; mean U_S spread on those ticks: 0.001736
+
+  Sustained tick   0: TSS=0.7554 maxU_S=0.053126 minU_S=0.018851 flat=False TAPNA=isolate Static=isolate agree=True
+  Sustained tick   1: TSS=0.8585 maxU_S=0.000000 minU_S=0.000000 flat=True TAPNA=scale_down Static=scale_down agree=True
+  Sustained tick   2: TSS=0.8613 maxU_S=0.000000 minU_S=0.000000 flat=True TAPNA=scale_down Static=scale_down agree=True
+  Sustained tick   3: TSS=0.8553 maxU_S=0.000000 minU_S=0.000000 flat=True TAPNA=scale_down Static=scale_down agree=True
+  Sustained tick   4: TSS=0.8642 maxU_S=0.000000 minU_S=0.000000 flat=True TAPNA=isolate Static=isolate agree=True
+  Sustained tick   5: TSS=0.8613 maxU_S=0.000000 minU_S=0.000000 flat=True TAPNA=scale_down Static=scale_down agree=True
+  Sustained tick   6: TSS=0.8620 maxU_S=0.000000 minU_S=0.000000 flat=True TAPNA=scale_down Static=scale_down agree=True
+  Sustained tick   7: TSS=0.8671 maxU_S=0.000000 minU_S=0.000000 flat=True TAPNA=migrate Static=migrate agree=True
+Sustained: flat-U_S ticks (max U_S == 0): 99/100; TAPNA==StaticWeighted choice on TSS>=0.5 ticks: 100/100; mean U_S spread on those ticks: 0.000343
+
+(f) twin recovery probe: canonical {50} schedule, seed 42
+tick   avg_trust  avg_network   TSS
+  45   (TSS=0.1395)
+  48   (TSS=0.2021)
+  49   (TSS=0.0956)
+  50   (TSS=0.7637)
+  51   (TSS=0.7670)
+  52   (TSS=0.7699)
+  55   (TSS=0.7618)
+  60   (TSS=0.7635)
+  70   (TSS=0.7716)
+  80   (TSS=0.7678)
+  90   (TSS=0.7698)
+  99   (TSS=0.7653)
+tick   avg_trust  avg_network   TSS-ish
+  45   0.8320     0.4078
+  48   0.8291     0.4125
+  49   0.8287     0.4112
+  50   0.3265     0.8392
+  51   0.3282     0.8387
+  52   0.3279     0.8361
+  55   0.3287     0.8273
+  60   0.3252     0.8208
+  70   0.3162     0.8073
+  80   0.3097     0.8002
+  90   0.3093     0.7838
+  99   0.3159     0.7791
+
+FOLLOWUP DONE
+PY_EXIT=0

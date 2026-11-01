@@ -5,6 +5,8 @@ streamlit
 faker
 pytest
 plotly
+fastapi
+uvicorn[standard]
 joblib>=1.5
 scikit-learn>=1.9
 scipy>=1.18

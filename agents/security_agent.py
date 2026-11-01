@@ -11,17 +11,19 @@ _THREAT_DETECTOR = None
 
 # ---------------------------------------------------------------------------
 # CICIoT2023 central values derived from the training dataset statistics.
-# Normal = benign traffic mean; Attack = attack-traffic mean.
+# Normal uses benign medians because the benign mean falls outside the
+# IsolationForest's learned inlier region for this skewed feature set.
+# Attack uses attack-traffic central values.
 # ---------------------------------------------------------------------------
 _NORMAL_CENTRAL: dict[str, float] = {
-    "rst_count": 14.0,
-    "ICMP": 0.168,
-    "Min": 89.5,
-    "AVG": 113.0,
-    "IAT": 83_210_000.0,
+    "rst_count": 0.0,
+    "ICMP": 0.0,
+    "Min": 54.0,
+    "AVG": 54.0,
+    "IAT": 83_124_520.23094302,
     "Number": 9.5,
-    "Variance": 0.078,
-    "Weight": 141.5,
+    "Variance": 0.0,
+    "Weight": 141.55,
 }
 
 _ATTACK_CENTRAL: dict[str, float] = {
@@ -97,7 +99,12 @@ def _telemetry_frame(twin_state) -> pd.DataFrame:
     attack = avg_trust < 0.7 or avg_network > 0.7
     central = _ATTACK_CENTRAL if attack else _NORMAL_CENTRAL
 
-    rng = np.random.default_rng()
+    # Draw from the global numpy stream instead of an unseeded
+    # np.random.default_rng(): the experiment runner calls
+    # np.random.seed(seed) for every seed, so this makes TSS/U_S noise
+    # reproducible per experiment seed. The distribution is unchanged -
+    # the same normal noise per feature, clipped exactly as before.
+    rng = np.random
     features: dict[str, float] = {}
     for key in ThreatDetector.FEATURES:
         value = central[key] + rng.normal(0, abs(central[key]) * 0.05 + 0.01)

@@ -1,0 +1,205 @@
+building traces ...
+  gradual done
+  sustained done
+  spike done
+  repeated done
+  canonical done
+
+(d) probe: re-simulating seed 42 reproduces the gradual trace exactly (TSS sum identical); no code path passes a chosen action back into the twin (see audit doc).
+
+==============================================================================
+(b) TAPNA, Gradual attack (100-tick schedule), seed 42: per-tick view
+==============================================================================
+ tick    TSS     wS branch  n_cand chosen_type  chosen_idx  isolate_is_US_argmax
+    0 0.2168 0.3857   ramp      10     isolate           2                  True
+    1 0.6654 0.7375   ramp       9     isolate           8                  True
+    2 0.6997 0.7645   ramp       7     isolate           0                  True
+    3 0.7267 0.7857   ramp       9     isolate           4                  True
+    4 0.7698 0.8195   ramp       5     isolate           0                  True
+    5 0.8029 0.8454   ramp       7     isolate           0                  True
+    6 0.8370 0.8721   ramp       5  scale_down           2                  True
+    7 0.8616 0.8915   ramp      10     migrate           6                  True
+    8 0.8557 0.8869   ramp       8  scale_down           4                  True
+    9 0.8586 0.8891   ramp      10     migrate           6                  True
+   10 0.8628 0.8924   ramp       5     isolate           4                  True
+   11 0.8628 0.8924   ramp       7  scale_down           6                  True
+   12 0.8606 0.8907   ramp       8     migrate           7                  True
+   13 0.8594 0.8897   ramp       8  scale_down           2                  True
+   14 0.8662 0.8951   ramp       7  scale_down           2                  True
+   15 0.8643 0.8936   ramp       8  scale_down           2                  True
+   16 0.8608 0.8908   ramp       8  scale_down           7                  True
+   17 0.8642 0.8935   ramp       9     isolate           0                  True
+   18 0.8633 0.8928   ramp      10  scale_down           4                  True
+   19 0.8614 0.8913   ramp       6     isolate           0                  True
+   20 0.8428 0.8767   ramp       5  scale_down           2                  True
+   21 0.8647 0.8939   ramp       7  scale_down           4                  True
+   22 0.8590 0.8894   ramp      10  scale_down           7                  True
+   23 0.8655 0.8945   ramp       7  scale_down           6                  True
+   24 0.8499 0.8823   ramp      10  scale_down           5                  True
+   25 0.8613 0.8912   ramp       7     migrate           5                  True
+   26 0.8614 0.8913   ramp      10     isolate           0                  True
+   27 0.8561 0.8871   ramp       5  scale_down           3                  True
+   28 0.8662 0.8951   ramp       5  scale_down           2                  True
+   29 0.8647 0.8939   ramp       9  scale_down           6                  True
+   30 0.8643 0.8936   ramp       5  scale_down           4                  True
+   31 0.8669 0.8956   ramp       9  scale_down           5                  True
+   32 0.8580 0.8887   ramp      10     migrate           8                  True
+   33 0.8623 0.8920   ramp      10  scale_down           2                  True
+   34 0.8635 0.8929   ramp       5  scale_down           2                  True
+   35 0.8543 0.8857   ramp       5     isolate           4                  True
+   36 0.8616 0.8914   ramp       5     isolate           0                  True
+   37 0.8609 0.8909   ramp       5     migrate           2                  True
+   38 0.8684 0.8968   ramp       6  scale_down           4                  True
+   39 0.8513 0.8833   ramp       6  scale_down           2                  True
+   40 0.8661 0.8950   ramp       8  scale_down           5                  True
+   41 0.8649 0.8940   ramp       6     isolate           5                  True
+   42 0.8613 0.8912   ramp       7     isolate           3                  True
+   43 0.8710 0.8988   ramp       9  scale_down           3                  True
+   44 0.8635 0.8929   ramp       5     migrate           2                  True
+   45 0.8655 0.8945   ramp       6     isolate           0                  True
+   46 0.8560 0.8871   ramp       5     isolate           0                  True
+   47 0.8684 0.8968   ramp       8     isolate           3                  True
+   48 0.8574 0.8881   ramp       9  scale_down           7                  True
+   49 0.8455 0.8788   ramp       9     migrate           5                  True
+   50 0.8586 0.8891   ramp       6  scale_down           5                  True
+   51 0.8613 0.8912   ramp       8     isolate           2                  True
+   52 0.8633 0.8928   ramp       6     migrate           2                  True
+   53 0.8657 0.8947   ramp       5     isolate           3                  True
+   54 0.8555 0.8866   ramp       5  scale_down           2                  True
+   55 0.8561 0.8872   ramp       8     migrate           7                  True
+   56 0.8593 0.8896   ramp       7  scale_down           4                  True
+   57 0.8640 0.8934   ramp       8  scale_down           7                  True
+   58 0.8601 0.8903   ramp       8  scale_down           3                  True
+   59 0.8463 0.8795   ramp      10  scale_down           6                  True
+   60 0.8560 0.8871   ramp       5     isolate           2                  True
+   61 0.8565 0.8875   ramp       6  scale_down           2                  True
+   62 0.8574 0.8881   ramp       9     isolate           0                  True
+   63 0.8655 0.8945   ramp      10     migrate           7                  True
+   64 0.8642 0.8935   ramp      10  scale_down           4                  True
+   65 0.8580 0.8887   ramp       6  scale_down           5                  True
+   66 0.8655 0.8945   ramp       8  scale_down           6                  True
+   67 0.8669 0.8956   ramp      10  scale_down           4                  True
+   68 0.8599 0.8901   ramp       9     migrate           8                  True
+   69 0.8477 0.8805   ramp       7     migrate           2                  True
+   70 0.8635 0.8929   ramp       5  scale_down           4                  True
+   71 0.8647 0.8939   ramp       8  scale_down           3                  True
+   72 0.8724 0.8999   ramp       6     migrate           5                  True
+   73 0.8567 0.8876   ramp       7  scale_down           3                  True
+   74 0.8580 0.8887   ramp       9  scale_down           4                  True
+   75 0.8594 0.8897   ramp       5     isolate           3                  True
+   76 0.8551 0.8864   ramp       7  scale_down           2                  True
+   77 0.8649 0.8940   ramp       8     isolate           0                  True
+   78 0.8655 0.8945   ramp       7  scale_down           4                  True
+   79 0.8616 0.8914   ramp       8  scale_down           4                  True
+   80 0.8594 0.8897   ramp       6  scale_down           4                  True
+   81 0.8623 0.8920   ramp       7  scale_down           2                  True
+   82 0.8663 0.8951   ramp       5  scale_down           2                  True
+   83 0.8594 0.8897   ramp       8     migrate           7                  True
+   84 0.8640 0.8934   ramp       5  scale_down           2                  True
+   85 0.8559 0.8870   ramp      10  scale_down           3                  True
+   86 0.8650 0.8941   ramp       7     isolate           0                  True
+   87 0.8608 0.8908   ramp       9     isolate           0                  True
+   88 0.8642 0.8935   ramp       5  scale_down           2                  True
+   89 0.8620 0.8918   ramp       7     migrate           6                  True
+   90 0.8633 0.8928   ramp       9     isolate           3                  True
+   91 0.8594 0.8897   ramp       5     isolate           0                  True
+   92 0.8671 0.8957   ramp      10  scale_down           6                  True
+   93 0.8540 0.8855   ramp       7  scale_down           5                  True
+   94 0.8608 0.8908   ramp      10     migrate           3                  True
+   95 0.8533 0.8849   ramp       5     isolate           3                  True
+   96 0.8614 0.8913   ramp       9     migrate           7                  True
+   97 0.8649 0.8940   ramp       8     isolate           0                  True
+   98 0.8602 0.8904   ramp       7     migrate           6                  True
+   99 0.8586 0.8891   ramp       6     isolate           0                  True
+
+TAPNA chose isolate in 30/100 ticks (defensive-response rate 0.300 over these attack ticks).
+Ticks where the max-U_S candidate IS an isolate: 100/100.
+
+Full candidate dump, tick 6 (TSS=0.8370, severity=0.1242, wS=0.8721, wR=wC=0.0639, pareto front size=4/5):
+idx type            U_R     U_S     U_C  wS*dU_S  (wR+wC)*d(R+C)   score pareto
+  0 isolate      0.3395  0.0000  0.0012   0.0000          0.0065  0.0218   True
+  1 no_op        0.2385  0.0000  0.0000   0.0000          0.0000  0.0153  False
+  2 scale_down   0.2680  0.0000  0.1528   0.0000          0.0117  0.0269   True
+  3 isolate      0.3047  0.0000  0.0898   0.0000          0.0100  0.0252   True
+  4 migrate      0.2813  0.0000  0.0922   0.0000          0.0086  0.0239   True
+chosen idx = 2 (scale_down); no_op idx = 1
+score = wR*U_R + wS*U_S + wC*U_C; dU_S/d(R+C) measured vs no_op.
+The isolate candidate wins only if wS*d(U_S) beats the residual
+weight advantage (wR+wC)*d(U_R+U_C) of resource-friendlier picks.
+
+==============================================================================
+(c) TSS ramp: Gradual vs Sustained, seed 42, 100 ticks
+==============================================================================
+
+Gradual: severity per tick 0.100 -> 0.500
+tick:      0      5     10     15     20     25     30     35     40     45     50     55     60     65     70     75     80     85     90     95
+TSS :  0.217  0.803  0.863  0.864  0.843  0.861  0.864  0.854  0.866  0.866  0.859  0.856  0.856  0.858  0.863  0.859  0.859  0.856  0.863  0.853
+mean TSS = 0.8477  min = 0.2168  max = 0.8724
+TSS first reaches 95% of max at tick 6; first-20 mean = 0.7960, last-20 mean = 0.8611
+
+Sustained: severity per tick 0.500 -> 0.500
+tick:      0      5     10     15     20     25     30     35     40     45     50     55     60     65     70     75     80     85     90     95
+TSS :  0.755  0.861  0.863  0.864  0.843  0.861  0.864  0.854  0.866  0.866  0.859  0.856  0.856  0.858  0.863  0.859  0.859  0.856  0.863  0.853
+mean TSS = 0.8598  min = 0.7554  max = 0.8724
+TSS first reaches 95% of max at tick 1; first-20 mean = 0.8563, last-20 mean = 0.8611
+
+==============================================================================
+(e) Candidate composition: Gradual attack, seed 42, 100 ticks
+==============================================================================
+candidates per tick: min=5, max=10, mean=7.35 (generator: random.randint(5, 10))
+ticks with exactly one no_op candidate: 100/100
+isolate candidates per tick: min=1, max=6
+action-type counts over 100 ticks (total candidates = 735): {'isolate': 283, 'no_op': 100, 'migrate': 184, 'scale_down': 168}
+candidate list is GLOBAL per tick (one list, targets chosen at
+random among the 100 devices); the first isolate always targets
+the lowest-trust device (action_generator.py).
+
+==============================================================================
+(f) Branch analysis: tau=0.40 vs tau=0.15, seed 42, 100 ticks
+==============================================================================
+Gradual          tau=0.40: ramp ticks  99/100, mean wS = 0.8329, wS|ramp = 0.8379, wS|decay = 0.3333
+Gradual          tau=0.15: ramp ticks 100/100, mean wS = 0.8806, wS|ramp = 0.8806, wS|decay = nan
+Gradual          TSS: max = 0.8724, mean = 0.8477
+Spike            tau=0.40: ramp ticks  51/100, mean wS = 0.5838, wS|ramp = 0.8245, wS|decay = 0.3333
+Spike            tau=0.15: ramp ticks  79/100, mean wS = 0.6235, wS|ramp = 0.6966, wS|decay = 0.3483
+Spike            TSS: max = 0.8613, mean = 0.5112
+Repeated         tau=0.40: ramp ticks 100/100, mean wS = 0.8272, wS|ramp = 0.8272, wS|decay = nan
+Repeated         tau=0.15: ramp ticks 100/100, mean wS = 0.8780, wS|ramp = 0.8780, wS|decay = nan
+Repeated         TSS: max = 0.8682, mean = 0.8445
+Sustained        tau=0.40: ramp ticks 100/100, mean wS = 0.8442, wS|ramp = 0.8442, wS|decay = nan
+Sustained        tau=0.15: ramp ticks 100/100, mean wS = 0.8900, wS|ramp = 0.8900, wS|decay = nan
+Sustained        TSS: max = 0.8724, mean = 0.8598
+Canonical {50}   tau=0.40: ramp ticks  50/100, mean wS = 0.5375, wS|ramp = 0.7416, wS|decay = 0.3333
+Canonical {50}   tau=0.15: ramp ticks  78/100, mean wS = 0.5891, wS|ramp = 0.6568, wS|decay = 0.3490
+Canonical {50}   TSS: max = 0.7807, mean = 0.4665
+
+==============================================================================
+(g) std semantics: pooled tick x seed rows vs per-seed means
+==============================================================================
+mini run: 3 seeds x 20 ticks, TAPNA, Gradual attack
+per-seed mean TSS: 0.8053, 0.8017, 0.8037
+pooled std over all 60 rows (what the summary reports): 0.1494
+std across the 3 per-seed means: 0.0018
+mean of per-seed stds: 0.1520
+=> build_attack_response_summary pools ALL tick x seed rows (ddof=1); NOT the std across per-seed means.
+
+==============================================================================
+(a) mini run: defensive rate + action mix by strategy/phase
+==============================================================================
+        scenario        strategy  defensive_response_rate  mean_security_response_gain  mean_response_lag  never_responded_runs
+  Gradual attack           TAPNA                    0.425                     0.011047              0.000                     0
+  Gradual attack  Greedy Latency                    0.850                     0.001900              0.150                     0
+  Gradual attack Static Weighted                    0.425                     0.011047              0.000                     0
+Sustained attack           TAPNA                    0.275                     0.001252              0.000                     0
+Sustained attack  Greedy Latency                    1.000                     0.000957              0.000                     0
+Sustained attack Static Weighted                    0.250                     0.000632              0.075                     0
+
+action mix (share of chosen types, attack ticks only):
+chosen_action_type  isolate  migrate  scale_down
+strategy                                        
+Greedy Latency        0.925    0.013       0.062
+Static Weighted       0.338    0.163       0.500
+TAPNA                 0.350    0.150       0.500
+
+ALL DIAGNOSTICS DONE
+PY_EXIT=0
